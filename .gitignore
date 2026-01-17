@@ -1,0 +1,15 @@
+# CircuitPython libraries (download from bundle as needed)
+lib/
+
+# Secrets (WiFi passwords, tokens)
+secrets.py
+
+# MacOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
