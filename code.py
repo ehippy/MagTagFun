@@ -2,11 +2,12 @@ import time
 import displayio
 from adafruit_magtag.magtag import MagTag
 from adafruit_display_shapes.rect import Rect
+from adafruit_display_shapes.roundrect import RoundRect
 import adafruit_requests as requests
 
 # Configuration
 GITHUB_USER = "ehippy"
-USE_FAKE_DATA = False  # Set to False to fetch real data from GitHub
+USE_FAKE_DATA = True  # Set to False to fetch real data from GitHub
 UPDATE_INTERVAL = 24 * 60 * 60  # Update once per day (24 hours)
 
 # Create MagTag object
@@ -201,9 +202,24 @@ else:
 # Draw the graph
 draw_contribution_graph(contributions)
 
-# Force display refresh
-print("Refreshing display...")
-magtag.graphics.display.refresh()
+# Add white rounded pill background for username (draw before text)
+pill = RoundRect(
+    2, 113,  # x, y position
+    len(GITHUB_USER) * 6 + 14, 14,  # width, height (approx text width + more padding)
+    5,  # corner radius
+    fill=0xFFFFFF,
+    outline=0x000000,
+    stroke=1
+)
+magtag.graphics.splash.append(pill)
+
+# Add small username label in bottom-left corner
+magtag.add_text(
+    text_position=(6, 126),  # Offset a bit for padding
+    text_scale=1,
+    text_anchor_point=(0.0, 1.0),  # Anchor to bottom-left
+)
+magtag.set_text(f"@{GITHUB_USER}")
 
 print("Display updated successfully!")
 
