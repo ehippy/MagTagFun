@@ -7,7 +7,7 @@ import adafruit_requests as requests
 
 # Configuration
 GITHUB_USER = "ehippy"
-USE_FAKE_DATA = False  # Used for fast testing, skips networking
+USE_FAKE_DATA = True  # Used for fast testing, skips networking
 UPDATE_INTERVAL = 24 * 60 * 60  # Update once per day (24 hours)
 
 # Create MagTag object
@@ -76,16 +76,30 @@ def fetch_contribution_data():
         
         data = response.json()
         
-        # Extract contribution counts from the response
+        # Extract contribution counts and stats from the response
         contributions = []
         weeks = data['data']['user']['contributionsCollection']['contributionCalendar']['weeks']
+        total_contributions = data['data']['user']['contributionsCollection']['contributionCalendar']['totalContributions']
         
         for week in weeks:
             for day in week['contributionDays']:
                 contributions.append(day['contributionCount'])
         
+        # Calculate current streak and best day from the data
+        best_day = max(contributions) if contributions else 0
+        
+        current_streak = 0
+        for count in reversed(contributions):
+            if count > 0:
+                current_streak += 1
+            else:
+                break
+        
         print(f"Fetched {len(contributions)} days of contribution data")
-        return contributions
+        print(f"Total: {total_contributions}, Streak: {current_streak}, Best: {best_day}")
+        
+        # Return data as tuple: (contributions, total, streak, best)
+        return (contributions, total_contributions, current_streak, best_day)
         
     except Exception as e:
         print(f"Error fetching data: {e}")
@@ -115,17 +129,17 @@ def draw_contribution_graph(contributions):
     print(f"Max contribution count: {max_contrib}")
     
     # Graph settings
-    weeks = 17  # ~4 months, fills screen
+    weeks = 32  # ~7.5 months, fills width
     days_per_week = 7
-    cell_width = 16
-    cell_height = 16
+    cell_width = 8
+    cell_height = 8
     gap = 1
     
-    # Calculate starting position to fill screen with minimal margins
+    # Calculate starting position at top of screen
     graph_width = weeks * cell_width + (weeks - 1) * gap
     graph_height = days_per_week * cell_height + (days_per_week - 1) * gap
     start_x = (display_width - graph_width) // 2
-    start_y = 3  # Small top margin
+    start_y = 3  # Top margin
     
     print(f"Graph position: x={start_x}, y={start_y}, width={graph_width}, height={graph_height}")
     
@@ -175,7 +189,7 @@ if USE_FAKE_DATA:
     print("Generating fake contribution data...")
     import random
     contributions = []
-    for i in range(119):  # 17 weeks
+    for i in range(224):  # 32 weeks
         # Create varied data: mostly low activity with some busy days
         if i % 7 == 0 or i % 7 == 6:  # Weekends - less activity
             contributions.append(random.randint(0, 2))
@@ -184,20 +198,42 @@ if USE_FAKE_DATA:
         else:  # Regular days
             contributions.append(random.randint(0, 15))
     print(f"Generated {len(contributions)} days of fake data")
+    
+    # Calculate fake stats
+    total = sum(contributions)
+    best = max(contributions)
+    streak = 0
+    for count in reversed(contributions):
+        if count > 0:
+            streak += 1
+        else:
+            break
 else:
     # Fetch real data from GitHub
-    contributions = fetch_contribution_data()
-    if not contributions:
+    result = fetch_contribution_data()
+    if not result:
         print("Failed to fetch data, falling back to fake data")
         import random
         contributions = []
-        for i in range(119):
+        for i in range(224):
             if i % 7 == 0 or i % 7 == 6:
                 contributions.append(random.randint(0, 2))
             elif i % 30 < 5:
                 contributions.append(random.randint(10, 25))
             else:
                 contributions.append(random.randint(0, 15))
+        total = sum(contributions)
+        best = max(contributions)
+        streak = 0
+        for count in reversed(contributions):
+            if count > 0:
+                streak += 1
+            else:
+                break
+    else:
+        contributions, total, streak, best = result
+
+print(f"Stats - Streak: {streak}, Total: {total}, Best: {best}")
 
 # Draw the graph
 draw_contribution_graph(contributions)
@@ -231,12 +267,55 @@ pill = RoundRect(
 magtag.graphics.splash.append(pill)
 
 # Add small username label in bottom-left corner
-magtag.add_text(
-    text_position=(6, 126),  # Offset a bit for padding
+username_index = magtag.add_text(
+    text_position=(6, 126),
     text_scale=1,
-    text_anchor_point=(0.0, 1.0),  # Anchor to bottom-left
+    text_anchor_point=(0.0, 1.0)
 )
-magtag.set_text(f"@{GITHUB_USER}")
+
+# Add stats in bottom-right (numbers on top, labels below)
+streak_num_index = magtag.add_text(
+    text_position=(200, 105),
+    text_scale=2,
+    text_anchor_point=(0.5, 0.5)
+)
+streak_label_index = magtag.add_text(
+    text_position=(200, 120),
+    text_scale=1,
+    text_anchor_point=(0.5, 0.5)
+)
+total_num_index = magtag.add_text(
+    text_position=(250, 105),
+    text_scale=2,
+    text_anchor_point=(0.5, 0.5)
+)
+total_label_index = magtag.add_text(
+    text_position=(250, 120),
+    text_scale=1,
+    text_anchor_point=(0.5, 0.5)
+)
+best_num_index = magtag.add_text(
+    text_position=(290, 105),
+    text_scale=2,
+    text_anchor_point=(1.0, 0.5)
+)
+best_label_index = magtag.add_text(
+    text_position=(290, 120),
+    text_scale=1,
+    text_anchor_point=(1.0, 0.5)
+)
+
+# Set all text with auto_refresh=False to batch the updates
+magtag.set_text(f"@{GITHUB_USER}", index=username_index, auto_refresh=False)
+magtag.set_text(str(streak), index=streak_num_index, auto_refresh=False)
+magtag.set_text("streak", index=streak_label_index, auto_refresh=False)
+magtag.set_text(str(total), index=total_num_index, auto_refresh=False)
+magtag.set_text("total", index=total_label_index, auto_refresh=False)
+magtag.set_text(str(best), index=best_num_index, auto_refresh=False)
+magtag.set_text("best", index=best_label_index, auto_refresh=False)
+
+# Now refresh once
+magtag.refresh()
 
 print("Display updated successfully!")
 
