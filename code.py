@@ -7,7 +7,7 @@ import adafruit_requests as requests
 
 # Configuration
 GITHUB_USER = "ehippy"
-USE_FAKE_DATA = True  # Used for fast testing, skips networking
+USE_FAKE_DATA = False  # Used for fast testing, skips networking
 UPDATE_INTERVAL = 24 * 60 * 60  # Update once per day (24 hours)
 
 # Create MagTag object
@@ -242,6 +242,16 @@ draw_contribution_graph(contributions)
 pill_width = len(GITHUB_USER) * 6 + 12
 pill_center_x = 2 + pill_width // 2
 
+# Calculate stat positions - spread evenly in remaining space after logo/pill
+display_width = 296
+stats_start_x = pill_width + 30  # Start stats 30px after the pill
+stats_available_width = display_width - stats_start_x - 10  # Leave 10px margin on right
+stat_spacing = stats_available_width // 3  # Divide into 3 equal columns
+
+stat1_x = stats_start_x + stat_spacing // 2
+stat2_x = stat1_x + stat_spacing
+stat3_x = stat2_x + stat_spacing
+
 # Add GitHub logo centered above username, overlapping 4px into pill
 try:
     bitmap = displayio.OnDiskBitmap("/github-logo.bmp")
@@ -275,32 +285,32 @@ username_index = magtag.add_text(
 
 # Add stats in bottom-right (numbers on top, labels below)
 streak_num_index = magtag.add_text(
-    text_position=(200, 105),
+    text_position=(stat1_x, 92),
     text_scale=2,
     text_anchor_point=(0.5, 0.5)
 )
 streak_label_index = magtag.add_text(
-    text_position=(200, 120),
+    text_position=(stat1_x, 107),
     text_scale=1,
     text_anchor_point=(0.5, 0.5)
 )
 total_num_index = magtag.add_text(
-    text_position=(250, 105),
+    text_position=(stat2_x, 92),
     text_scale=2,
     text_anchor_point=(0.5, 0.5)
 )
 total_label_index = magtag.add_text(
-    text_position=(250, 120),
+    text_position=(stat2_x, 107),
     text_scale=1,
     text_anchor_point=(0.5, 0.5)
 )
 best_num_index = magtag.add_text(
-    text_position=(290, 105),
+    text_position=(stat3_x, 92),
     text_scale=2,
     text_anchor_point=(1.0, 0.5)
 )
 best_label_index = magtag.add_text(
-    text_position=(290, 120),
+    text_position=(stat3_x, 107),
     text_scale=1,
     text_anchor_point=(1.0, 0.5)
 )
