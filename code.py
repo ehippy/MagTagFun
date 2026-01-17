@@ -109,17 +109,17 @@ def draw_contribution_graph(contributions):
     print(f"Max contribution count: {max_contrib}")
     
     # Graph settings
-    weeks = 52  # GitHub shows 52 weeks (1 year)
+    weeks = 17  # ~4 months, fills screen
     days_per_week = 7
-    cell_width = 4
-    cell_height = 4
+    cell_width = 16
+    cell_height = 16
     gap = 1
     
-    # Calculate starting position to center horizontally and bottom-align vertically
+    # Calculate starting position to fill screen with minimal margins
     graph_width = weeks * cell_width + (weeks - 1) * gap
     graph_height = days_per_week * cell_height + (days_per_week - 1) * gap
     start_x = (display_width - graph_width) // 2
-    start_y = display_height - graph_height - 5  # 5px margin from bottom
+    start_y = 3  # Small top margin
     
     print(f"Graph position: x={start_x}, y={start_y}, width={graph_width}, height={graph_height}")
     
@@ -169,7 +169,7 @@ if USE_FAKE_DATA:
     print("Generating fake contribution data...")
     import random
     contributions = []
-    for i in range(364):  # 52 weeks
+    for i in range(119):  # 17 weeks
         # Create varied data: mostly low activity with some busy days
         if i % 7 == 0 or i % 7 == 6:  # Weekends - less activity
             contributions.append(random.randint(0, 2))
@@ -185,7 +185,7 @@ else:
         print("Failed to fetch data, falling back to fake data")
         import random
         contributions = []
-        for i in range(364):
+        for i in range(119):
             if i % 7 == 0 or i % 7 == 6:
                 contributions.append(random.randint(0, 2))
             elif i % 30 < 5:
@@ -196,13 +196,10 @@ else:
 # Draw the graph
 draw_contribution_graph(contributions)
 
-# Add centered title AFTER drawing graph
-magtag.add_text(
-    text_position=(148, 10),
-    text_scale=1,
-    text_anchor_point=(0.5, 0.5),
-)
-magtag.set_text(f"@{GITHUB_USER} contributions")
+# Force display refresh
+print("Refreshing display...")
+magtag.graphics.display.refresh()
+
 print("Display updated successfully!")
 
 # Keep display on for testing
