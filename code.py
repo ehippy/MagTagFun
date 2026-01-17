@@ -12,6 +12,11 @@ UPDATE_INTERVAL = 24 * 60 * 60  # Update once per day (24 hours)
 # Create MagTag object
 magtag = MagTag()
 
+# Optimize for battery life
+magtag.peripherals.neopixel_disable = True  # Turn off NeoPixels
+if hasattr(magtag.peripherals, 'light_sensor_disable'):
+    magtag.peripherals.light_sensor_disable = True  # Turn off light sensor
+
 # GitHub API endpoint
 GITHUB_API_URL = "https://api.github.com/graphql"
 
@@ -202,7 +207,6 @@ magtag.graphics.display.refresh()
 
 print("Display updated successfully!")
 
-# Keep display on for testing
-print("Keeping display on...")
-while True:
-    time.sleep(1)
+# Deep sleep to conserve battery (wake up in 24 hours to update)
+print(f"Going to deep sleep for {UPDATE_INTERVAL} seconds (24 hours)...")
+magtag.exit_and_deep_sleep(UPDATE_INTERVAL)
