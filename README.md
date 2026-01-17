@@ -2,12 +2,15 @@
 
 A CircuitPython project that displays a GitHub user's contribution graph on an Adafruit MagTag e-ink display. Updates daily and shows a full year of contribution activity in a heatmap-style visualization.
 
+![MagTag displaying GitHub contribution graph](magtag-in-action.png)
+
 ## Features
 
-- Fetches real GitHub contribution data via GraphQL API
-- Displays 52 weeks (1 year) of contributions
-- Grayscale heatmap visualization optimized for e-ink
-- Daily auto-updates via deep sleep (24-hour cycle)
+- Displays 32 weeks of GitHub contribution history as a grayscale heatmap
+- Shows current streak, yearly total, and peak contributions
+- GitHub logo and username badge
+- Fetches data via GitHub GraphQL API
+- Battery-optimized with 24-hour deep sleep cycle
 - Fake data mode for testing without network
 
 ## Hardware Required
