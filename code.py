@@ -7,7 +7,7 @@ import adafruit_requests as requests
 
 # Configuration
 GITHUB_USER = "ehippy"
-USE_FAKE_DATA = True  # Set to False to fetch real data from GitHub
+USE_FAKE_DATA = False  # Used for fast testing, skips networking
 UPDATE_INTERVAL = 24 * 60 * 60  # Update once per day (24 hours)
 
 # Create MagTag object
@@ -202,7 +202,24 @@ else:
 # Draw the graph
 draw_contribution_graph(contributions)
 
-# Add white rounded pill background for username (draw before text)
+# Calculate pill dimensions for positioning
+pill_width = len(GITHUB_USER) * 6 + 12
+pill_center_x = 2 + pill_width // 2
+
+# Add GitHub logo centered above username, overlapping 4px into pill
+try:
+    bitmap = displayio.OnDiskBitmap("/github-logo.bmp")
+    palette = bitmap.pixel_shader
+    palette.make_transparent(0)  # Make background transparent
+    logo_x = pill_center_x - 20  # Center 40px logo
+    logo_y = 113 - 40 + 4  # 4px into the pill (pill starts at y=113)
+    tile_grid = displayio.TileGrid(bitmap, pixel_shader=palette, x=logo_x, y=logo_y)
+    magtag.graphics.splash.append(tile_grid)
+    print("GitHub logo added")
+except Exception as e:
+    print(f"Could not load logo: {e}")
+
+# Add white rounded pill background for username
 pill = RoundRect(
     2, 113,  # x, y position
     len(GITHUB_USER) * 6 + 14, 14,  # width, height (approx text width + more padding)

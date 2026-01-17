@@ -58,6 +58,18 @@ Uses VS Code tasks for easy deployment:
 - `Cmd+Shift+B` - Deploy code.py only
 - "Deploy All to MagTag" - Sync entire project
 
+### Creating/Modifying the GitHub Logo
+
+The GitHub logo bitmap is created using ImageMagick. To regenerate or modify:
+
+```bash
+# Resize to 40x40, preserve transparency, convert to indexed color BMP
+convert GitHub_Invertocat_Black.png -resize 40x40 -background none \
+  -gravity center -extent 40x40 -colors 4 -type Palette BMP3:github-logo.bmp
+```
+
+Adjust the `-resize 40x40` parameter to change the size. The `-colors 4` creates a 2-bit palette suitable for e-ink displays.
+
 ## License
 
 MIT
